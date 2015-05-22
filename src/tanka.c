@@ -10,8 +10,8 @@ int	main(){
 	int	ret;
 	char	*buf;
 
-	buf = (char*)malloc(32*sizeof(char));
-	read(1,buf,31);
+	buf = (char*)malloc(256*sizeof(char));
+	read(1,buf,255);
 	((TANKA)buf)();
 	free(buf);
 	// 短歌を読むとレジスタ壊す場合があるので、そのまま終了。

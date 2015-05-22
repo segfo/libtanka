@@ -7,8 +7,8 @@ from pwn import *
 
 hexdump = lambda data,offset=0: (pwnlib.util.fiddling.hexdump(data,begin=offset).split('\n')[0])
 
-def composeTanka(code,host = "localhost",port = 4000):
-	code = checkTanka(code)
+def composeTanka(code,host = "localhost",port = 4000,mode = False):
+	code = checkTanka(code,mode)
 	r = remote(host,port)
 	r.write(code)
 	result = r.readall()
@@ -16,13 +16,14 @@ def composeTanka(code,host = "localhost",port = 4000):
 	return	result
 
 wordLen = [5,7,5,7,7]
-def checkTanka(code):
+def checkTanka(code,mode):
 	tankaLen = len(code)
 	if tankaLen > 31:
-		print "長いです。"
-		exit()
-
-	code += "\x90"*(31-tankaLen)
+		print "%dバイト 字余りしています。"%(tankaLen - 31)
+		if mode == False:
+			exit()
+	else:
+		code += "\x90"*(31-tankaLen)
 
 	print "短歌(16進ダンプ)"
 	print pwnlib.util.fiddling.hexdump(code)+"\n"
@@ -33,15 +34,16 @@ def checkTanka(code):
 	s,dc,d = "","",""	# mnemonic,dump,dump code
 	for op in md.disasm(code, 0x10000):
 		s += "0x%x(%d):\t%s\t%s\n" %(op.address, op.size, op.mnemonic, op.op_str)
-		if siz == wordLen[i]:
-			i+=1
+		if siz >= wordLen[i]:
+			if i < len(wordLen)-1:
+				i+=1
 			dc += "%s\n"%hexdump(d,off-siz)
 			siz = op.size
 			d = code[off:op.size+off]
 		else:
 			d += code[off:op.size+off]
 			siz += op.size
-			if siz > 7:
+			if mode == False and (siz > 7):
 				off += op.size
 				break
 		off += op.size
@@ -54,7 +56,7 @@ def checkTanka(code):
 
 	# i != 4は5,7,5,7 まで短歌として成り立っているかどうか
 	# siz != 7は 5,7,5,7,[siz]が7かどうか
-	if i != 4 or siz != 7 :
+	if mode == False and (i != 4 or siz != 7) :
 		print	"%d バイト多いです。"% (siz - wordLen[i])
 		print	"短歌は5,7,5,7,7のリズムで詠むものです。"
 		print	"CPUの気持ちになっていきましょう。"
