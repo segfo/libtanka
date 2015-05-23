@@ -37,11 +37,16 @@ Pythonだけで詠める
     `./bin/tanka.py`  
 
 # API
-libtanka.composeTanka(code)
-* `code` :
-	短歌のバイナリ(string)
-* `返却値` :
-	短歌の実行結果(string)
+libtanka.composeTanka( code, host = "localhost", port = 4000,  strict = True )
+* `code` : 短歌のバイナリ(string)
+* `host` : qiraが動作するポート番号  
+	デフォルト 4000
+* `port` : qiraが動作するホスト  
+	デフォルト localhost
+* `strict` : 短歌が字余りした時の動作  
+	デフォルト True(字余りを許可しない)
+  
+* `返却値` : 短歌の実行結果(string)
   
 例：他の人が作った短歌を詠んでみる(サンプルの短歌は[坂井さんのページ](http://kozos.jp/asm-tanka/)から引用)
 
@@ -62,15 +67,6 @@ result = libtanka.composeTanka(code)
 print result
 ```
 
-# 短歌を実行する仕組み
-自分が作ったスクリプトが機械語をlibtankaに渡す  
-→libtanka(機械語をqiraに渡す)  
-→qira（機械語を受け取って、tanka32モジュールに標準入力から渡す）  
-→tanka32モジュールが受け取って実行する(tanka.c)  
-→その結果を標準出力に出す  
-→qiraが受け取って、libtankaに渡す  
-→libtankaが受け取る  
-  
 # 要求外部ライブラリ
 アセンブルする時に必要  
 [pwntools](https://github.com/Gallopsled/pwntools)  
@@ -81,3 +77,12 @@ print result
 短歌をデバッグ・実行するときに必要  
 [qira](https://github.com/BinaryAnalysisPlatform/qira)  
 
+# 短歌を実行する仕組み
+自分が作ったスクリプトが機械語をlibtankaに渡す  
+→libtanka(機械語をqiraに渡す)  
+→qira（機械語を受け取って、tanka32モジュールに標準入力から渡す）  
+→tanka32モジュールが受け取って実行する(tanka.c)  
+→その結果を標準出力に出す  
+→qiraが受け取って、libtankaに渡す  
+→libtankaが受け取る  
+  

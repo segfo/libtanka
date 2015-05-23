@@ -7,8 +7,8 @@ from pwn import *
 
 hexdump = lambda data,offset=0: (pwnlib.util.fiddling.hexdump(data,begin=offset).split('\n')[0])
 
-def composeTanka(code,host = "localhost",port = 4000,mode = False):
-	code = checkTanka(code,mode)
+def composeTanka(code,host = "localhost",port = 4000,strict = True):
+	code = checkTanka(code,strict)
 	r = remote(host,port)
 	r.write(code)
 	result = r.readall()
@@ -16,11 +16,11 @@ def composeTanka(code,host = "localhost",port = 4000,mode = False):
 	return	result
 
 wordLen = [5,7,5,7,7]
-def checkTanka(code,mode):
+def checkTanka(code,strict):
 	tankaLen = len(code)
 	if tankaLen > 31:
 		print "%dバイト 字余りしています。"%(tankaLen - 31)
-		if mode == False:
+		if strict == True:
 			exit()
 	else:
 		code += "\x90"*(31-tankaLen)
@@ -43,7 +43,7 @@ def checkTanka(code,mode):
 		else:
 			d += code[off:op.size+off]
 			siz += op.size
-			if mode == False and (siz > 7):
+			if strict == True and (siz > 7):
 				off += op.size
 				break
 		off += op.size
@@ -56,7 +56,7 @@ def checkTanka(code,mode):
 
 	# i != 4は5,7,5,7 まで短歌として成り立っているかどうか
 	# siz != 7は 5,7,5,7,[siz]が7かどうか
-	if mode == False and (i != 4 or siz != 7) :
+	if strict == True and (i != 4 or siz != 7) :
 		print	"%d バイト多いです。"% (siz - wordLen[i])
 		print	"短歌は5,7,5,7,7のリズムで詠むものです。"
 		print	"CPUの気持ちになっていきましょう。"
